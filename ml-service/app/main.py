@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from app.config import Config
 from app.schemas import PredictionRequest, PredictionResponse
 from app.prediction import predict_flood_risk
+from app.eureka_client import register_with_eureka
 
 app = FastAPI(
     title=Config.APP_NAME,
@@ -13,6 +14,9 @@ app = FastAPI(
     version=Config.APP_VERSION
 )
 
+@app.on_event("startup")
+async def startup_event():
+    await register_with_eureka()
 
 @app.get("/")
 def home():

@@ -1,0 +1,11 @@
+.idea/
+.git/
+.gitignore
+
+.mvn/wrapper/maven-wrapper.jar
+
+target/test-classes/
+target/classes/
+
+**/__pycache__/
+**/*.pyc
