@@ -1,28 +1,39 @@
+name: flood-platform
+
 services:
 
   discovery-service:
     image: flood-discovery-service
     container_name: pfe-discovery-service
+    restart: unless-stopped
     ports:
       - "8761:8761"
+    networks:
+      - flood-network
 
   ml-service:
     image: flood-ml-service
     container_name: pfe-ml-service
+    restart: unless-stopped
     ports:
       - "8081:8081"
     environment:
       EUREKA_SERVER: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: ml-service
     depends_on:
       - discovery-service
+    networks:
+      - flood-network
 
   geospatial-service:
     image: flood-geospatial-service
     container_name: pfe-geospatial-service
+    restart: unless-stopped
     ports:
       - "8082:8082"
     environment:
       EUREKA_SERVER: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: geospatial-service
       DB_HOST: host.docker.internal
       DB_PORT: 5432
       DB_NAME: flood_db
@@ -31,10 +42,13 @@ services:
       INSTANCE_HOST: geospatial-service
     depends_on:
       - discovery-service
+    networks:
+      - flood-network
 
   hydromet-service:
     image: flood-hydromet-service
     container_name: pfe-hydromet-service
+    restart: unless-stopped
     ports:
       - "8083:8083"
     environment:
@@ -46,24 +60,37 @@ services:
       - discovery-service
       - geospatial-service
       - ml-service
+    networks:
+      - flood-network
 
   gateway-service:
     image: flood-gateway-service
     container_name: pfe-gateway-service
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
       EUREKA_SERVER: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: gateway-service
     depends_on:
       - discovery-service
       - ml-service
       - geospatial-service
       - hydromet-service
+    networks:
+      - flood-network
 
   frontend:
     image: flood-frontend
     container_name: pfe-frontend
+    restart: unless-stopped
     ports:
       - "3000:80"
     depends_on:
       - gateway-service
+    networks:
+      - flood-network
+
+networks:
+  flood-network:
+    driver: bridge
