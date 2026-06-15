@@ -1,0 +1,69 @@
+services:
+
+  discovery-service:
+    image: flood-discovery-service
+    container_name: pfe-discovery-service
+    ports:
+      - "8761:8761"
+
+  ml-service:
+    image: flood-ml-service
+    container_name: pfe-ml-service
+    ports:
+      - "8081:8081"
+    environment:
+      EUREKA_SERVER: http://discovery-service:8761/eureka/
+    depends_on:
+      - discovery-service
+
+  geospatial-service:
+    image: flood-geospatial-service
+    container_name: pfe-geospatial-service
+    ports:
+      - "8082:8082"
+    environment:
+      EUREKA_SERVER: http://discovery-service:8761/eureka/
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_NAME: flood_db
+      DB_USER: flood_user
+      DB_PASSWORD: flood_password
+      INSTANCE_HOST: geospatial-service
+    depends_on:
+      - discovery-service
+
+  hydromet-service:
+    image: flood-hydromet-service
+    container_name: pfe-hydromet-service
+    ports:
+      - "8083:8083"
+    environment:
+      EUREKA_SERVER: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: hydromet-service
+      GEOSPATIAL_SERVICE_URL: http://geospatial-service:8082
+      ML_SERVICE_URL: http://ml-service:8081/predict
+    depends_on:
+      - discovery-service
+      - geospatial-service
+      - ml-service
+
+  gateway-service:
+    image: flood-gateway-service
+    container_name: pfe-gateway-service
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_SERVER: http://discovery-service:8761/eureka/
+    depends_on:
+      - discovery-service
+      - ml-service
+      - geospatial-service
+      - hydromet-service
+
+  frontend:
+    image: flood-frontend
+    container_name: pfe-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway-service
