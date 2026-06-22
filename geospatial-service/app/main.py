@@ -13,12 +13,15 @@ from app.schemas.prediction_schema import (
     StaticFeaturesResponse
 )
 
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(
     title=Config.APP_NAME,
     description="Service géospatial pour récupérer les variables statiques et orchestrer la prédiction",
     version=Config.APP_VERSION
 )
+
+Instrumentator().instrument(app).expose(app)
 
 
 @app.on_event("startup")

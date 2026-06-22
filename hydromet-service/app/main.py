@@ -11,10 +11,14 @@ from app.services.hydromet_service import (
     predict_risk_from_coordinates
 )
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 app = FastAPI(
     title=Config.APP_NAME,
     version=Config.APP_VERSION
 )
+
+Instrumentator().instrument(app).expose(app)
 
 @app.on_event("startup")
 async def startup_event():

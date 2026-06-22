@@ -4,3 +4,5 @@ requests
 python-dotenv
 py-eureka-client
 pydantic
+
+prometheus-fastapi-instrumentator
