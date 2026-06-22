@@ -99,6 +99,7 @@ services:
       - "9091:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
     depends_on:
       - discovery-service
       - gateway-service
@@ -114,6 +115,11 @@ services:
     restart: unless-stopped
     ports:
       - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
     networks:
@@ -122,3 +128,7 @@ services:
 networks:
   flood-network:
     driver: bridge
+
+volumes:
+  grafana-data:
+  prometheus-data:
